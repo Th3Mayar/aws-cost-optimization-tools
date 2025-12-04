@@ -1,4 +1,13 @@
-# AWS Cost Optimization Tools
+# AWS Cost Optimization Tools - coaws
+
+```
+    ██████╗ ██████╗  █████╗ ██╗    ██╗███████╗
+   ██╔════╝██╔═══██╗██╔══██╗██║    ██║██╔════╝
+   ██║     ██║   ██║███████║██║ █╗ ██║███████╗
+   ██║     ██║   ██║██╔══██║██║███╗██║╚════██║
+   ╚██████╗╚██████╔╝██║  ██║╚███╔███╔╝███████║
+    ╚═════╝ ╚═════╝ ╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝
+```
 
 FinOps mini-shell to automate tagging and cost optimization in AWS.
 
@@ -6,35 +15,68 @@ FinOps mini-shell to automate tagging and cost optimization in AWS.
 
 - 🏷️ **Tag Propagation**: Automatically propagates tags from EC2 instances to volumes, snapshots, EFS and FSx
 - 💰 **Cost Allocation Tags**: Activates tags for Cost Explorer
-- 🖥️ **Interactive Mode**: Shell REPL to execute commands interactively
+- 🖥️ **Interactive Mode**: Beautiful shell REPL with colored output
 - 🔧 **CLI Mode**: Non-interactive commands for scripts and automation
 - 🔒 **Dry-Run by default**: Safe by default, requires `--apply` for real changes
+- 🌍 **Multi-platform**: Available for Linux, macOS, and Windows
 
 ## Installation
 
-### Prerequisites
+### Quick Install (Recommended)
 
+#### Linux / macOS
+```bash
+curl -sSL https://raw.githubusercontent.com/Th3Mayar/aws-cost-optimization-tools/main/install.sh | bash
+```
+
+#### Windows (PowerShell)
+```powershell
+irm https://raw.githubusercontent.com/Th3Mayar/aws-cost-optimization-tools/main/install.ps1 | iex
+```
+
+### Package Managers
+
+#### Homebrew (macOS/Linux)
+```bash
+brew tap Th3Mayar/coaws
+brew install coaws
+```
+
+#### APT (Debian/Ubuntu)
+```bash
+# Download the .deb package from releases
+wget https://github.com/Th3Mayar/aws-cost-optimization-tools/releases/latest/download/coaws_*_linux_amd64.deb
+sudo dpkg -i coaws_*_linux_amd64.deb
+```
+
+#### YUM/DNF (RHEL/CentOS/Fedora)
+```bash
+# Download the .rpm package from releases
+wget https://github.com/Th3Mayar/aws-cost-optimization-tools/releases/latest/download/coaws_*_linux_amd64.rpm
+sudo rpm -i coaws_*_linux_amd64.rpm
+```
+
+### Manual Installation
+
+Download the appropriate binary for your system from the [Releases page](https://github.com/Th3Mayar/aws-cost-optimization-tools/releases).
+
+### Build from Source
+
+#### Prerequisites
 - Go 1.21 or higher
 - AWS CLI configured with valid credentials
 
-### Install Go (Ubuntu/Debian)
-
+#### Build Steps
 ```bash
-sudo snap install go --classic
-```
-
-### Build the binary
-
-```bash
-cd /home/jhenriquez/repos/aws-cost-optimization-tools
+git clone https://github.com/Th3Mayar/aws-cost-optimization-tools.git
+cd aws-cost-optimization-tools
 go mod tidy
-go build -o cost-optimization ./cmd/cost-optimization
+go build -o coaws ./cmd/cost-optimization
 ```
 
-### Global installation (optional)
-
+#### Global Installation (optional)
 ```bash
-sudo mv cost-optimization /usr/local/bin/
+sudo mv coaws /usr/local/bin/
 ```
 
 ## Usage
@@ -42,17 +84,17 @@ sudo mv cost-optimization /usr/local/bin/
 ### Interactive Mode (Shell)
 
 ```bash
-cost-optimization start
+coaws start
 ```
 
 Inside the shell:
 
 ```bash
-aws-cost-optimization> help
-aws-cost-optimization> tagging all --apply --tag-storage
-aws-cost-optimization> tagging show
-aws-cost-optimization> tagging activate --apply
-aws-cost-optimization> exit
+coaws ➜ help
+coaws ➜ tagging all --apply --tag-storage
+coaws ➜ tagging show
+coaws ➜ tagging activate --apply
+coaws ➜ exit
 ```
 
 ### CLI Mode (Non-Interactive)
@@ -60,51 +102,51 @@ aws-cost-optimization> exit
 #### View help
 
 ```bash
-cost-optimization --help
+coaws --help
 ```
 
 #### Dry-run (default, does not apply changes)
 
 ```bash
-cost-optimization tagging all
-cost-optimization tagging set us-east-1
-cost-optimization tagging show
+coaws tagging all
+coaws tagging set us-east-1
+coaws tagging show
 ```
 
 #### Apply real changes
 
 ```bash
-cost-optimization tagging all --apply
-cost-optimization tagging set us-east-1 --apply
-cost-optimization tagging all --apply --tag-storage
+coaws tagging all --apply
+coaws tagging set us-east-1 --apply
+coaws tagging all --apply --tag-storage
 ```
 
 #### Specific modes
 
 ```bash
 # EC2 only (instances + volumes + snapshots)
-cost-optimization tagging ec2 --apply
+coaws tagging ec2 --apply
 
 # EBS only (volumes + snapshots)
-cost-optimization tagging ebs --apply
+coaws tagging ebs --apply
 
 # Volumes only
-cost-optimization tagging volumes --apply
+coaws tagging volumes --apply
 
 # Snapshots only
-cost-optimization tagging snapshots --apply
+coaws tagging snapshots --apply
 
 # FSx only
-cost-optimization tagging fsx --apply
+coaws tagging fsx --apply
 
 # EFS only
-cost-optimization tagging efs --apply
+coaws tagging efs --apply
 
 # Activate Cost Allocation Tags
-cost-optimization tagging activate --apply
+coaws tagging activate --apply
 
 # Fix orphaned snapshots
-cost-optimization tagging all --apply --fix-orphans
+coaws tagging all --apply --fix-orphans
 ```
 
 ## Project Structure

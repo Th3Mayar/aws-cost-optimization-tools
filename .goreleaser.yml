@@ -1,0 +1,128 @@
+# GoReleaser configuration for coaws
+# This enables cross-platform builds for Linux, macOS, and Windows
+
+version: 2
+
+before:
+  hooks:
+    # Run tests before building
+    - go test ./...
+    - go mod tidy
+
+builds:
+  - id: coaws
+    binary: coaws
+    main: ./cmd/cost-optimization
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+      - 386
+    goarm:
+      - 7
+    ignore:
+      # Skip certain combinations that don't make sense
+      - goos: darwin
+        goarch: 386
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w
+      - -X github.com/Th3Mayar/aws-cost-optimization-tools/internal/tagging.Version={{.Version}}
+      - -X github.com/Th3Mayar/aws-cost-optimization-tools/internal/tagging.Commit={{.Commit}}
+      - -X github.com/Th3Mayar/aws-cost-optimization-tools/internal/tagging.Date={{.Date}}
+
+archives:
+  - id: coaws-archive
+    name_template: >-
+      coaws_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+      - QUICKSTART.md
+      - LICENSE*
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - '^ci:'
+
+release:
+  github:
+    owner: Th3Mayar
+    name: aws-cost-optimization-tools
+  draft: false
+  prerelease: auto
+  name_template: "Release v{{.Version}}"
+  footer: |
+    ## Installation
+    
+    ### Linux/macOS (via script):
+    ```bash
+    curl -sSL https://raw.githubusercontent.com/Th3Mayar/aws-cost-optimization-tools/main/install.sh | bash
+    ```
+    
+    ### Manual installation:
+    Download the appropriate binary for your system from the assets below.
+    
+    ### Homebrew (macOS/Linux):
+    ```bash
+    brew tap Th3Mayar/coaws
+    brew install coaws
+    ```
+    
+    ### Windows (PowerShell):
+    ```powershell
+    irm https://raw.githubusercontent.com/Th3Mayar/aws-cost-optimization-tools/main/install.ps1 | iex
+    ```
+
+brews:
+  - name: coaws
+    repository:
+      owner: Th3Mayar
+      name: homebrew-coaws
+    folder: Formula
+    homepage: https://github.com/Th3Mayar/aws-cost-optimization-tools
+    description: "AWS Cost Optimization & Savings Tool"
+    license: MIT
+    install: |
+      bin.install "coaws"
+    test: |
+      system "#{bin}/coaws", "--version"
+
+nfpms:
+  - id: coaws-packages
+    package_name: coaws
+    vendor: Th3Mayar
+    homepage: https://github.com/Th3Mayar/aws-cost-optimization-tools
+    maintainer: "Your Name <your.email@example.com>"
+    description: "AWS Cost Optimization & Savings Tool - Intelligent tagging and resource management"
+    license: MIT
+    formats:
+      - deb
+      - rpm
+      - apk
+    bindir: /usr/bin
+    contents:
+      - src: ./README.md
+        dst: /usr/share/doc/coaws/README.md
+      - src: ./QUICKSTART.md
+        dst: /usr/share/doc/coaws/QUICKSTART.md
