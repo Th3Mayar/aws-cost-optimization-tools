@@ -100,7 +100,7 @@ brews:
     repository:
       owner: Th3Mayar
       name: homebrew-coaws
-    folder: Formula
+    directory: Formula
     homepage: https://github.com/Th3Mayar/aws-cost-optimization-tools
     description: "AWS Cost Optimization & Savings Tool"
     license: MIT
