@@ -1,7 +1,7 @@
 # GoReleaser configuration for coaws
 # This enables cross-platform builds for Linux, macOS, and Windows
 
-version: 1
+version: 2
 
 before:
   hooks:
@@ -52,6 +52,7 @@ archives:
 
 checksum:
   name_template: 'checksums.txt'
+  algorithm: sha256
 
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
