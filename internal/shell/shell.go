@@ -1,28 +1,61 @@
 package shell
 
 import (
-	"bufio"
 	"context"
 	"fmt"
+	"io"
 	"os"
+	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/Th3Mayar/aws-cost-optimization-tools/internal/tagging"
+	"github.com/chzyer/readline"
+	"github.com/fatih/color"
 )
 
-// Run starts the interactive shell REPL
+// Run starts the interactive shell REPL with a stylized banner and prompt.
 func Run() error {
-	reader := bufio.NewReader(os.Stdin)
+	// Print animated banner
+	printBanner()
 
-	fmt.Println("AWS Cost Optimization Shell")
-	fmt.Println("Type 'help' to see available commands.")
-	fmt.Println("Type 'exit' or 'quit' to leave.")
-	fmt.Println()
+	// Build prompt with ANSI colors. 'coaws' in blue and a cyan arrow.
+	blue := color.New(color.FgBlue).SprintFunc()
+	cyan := color.New(color.FgCyan).SprintFunc()
+
+	prompt := fmt.Sprintf("%s %s ", blue("coaws"), cyan("➜"))
+
+	// History file in user's home
+	histFile := "/tmp/.coaws_history"
+	if home, err := os.UserHomeDir(); err == nil {
+		histFile = filepath.Join(home, ".coaws_history")
+	}
+
+	rlConfig := &readline.Config{
+		Prompt:          prompt,
+		HistoryFile:     histFile,
+		InterruptPrompt: "^C",
+		EOFPrompt:       "exit",
+	}
+
+	rl, err := readline.NewEx(rlConfig)
+	if err != nil {
+		return err
+	}
+	defer rl.Close()
 
 	for {
-		fmt.Print("aws-cost-optimization> ")
-		line, err := reader.ReadString('\n')
-		if err != nil {
+		line, err := rl.Readline()
+		if err == readline.ErrInterrupt {
+			if len(line) == 0 {
+				fmt.Println()
+				return nil
+			}
+			continue
+		} else if err == io.EOF {
+			fmt.Println()
+			return nil
+		} else if err != nil {
 			return err
 		}
 
@@ -45,6 +78,56 @@ func Run() error {
 			fmt.Println("Error:", err)
 		}
 	}
+}
+
+// printBanner prints a stylized ASCII banner inspired by Amazon Q
+func printBanner() {
+	cyan := color.New(color.FgCyan, color.Bold).SprintFunc()
+	blue := color.New(color.FgBlue, color.Bold).SprintFunc()
+	yellow := color.New(color.FgYellow, color.Bold).SprintFunc()
+	white := color.New(color.FgWhite).SprintFunc()
+	
+	// ASCII art logo - "coaws" text
+	logo := []string{
+		"",
+		"    ██████╗ ██████╗  █████╗ ██╗    ██╗███████╗",
+		"   ██╔════╝██╔═══██╗██╔══██╗██║    ██║██╔════╝",
+		"   ██║     ██║   ██║███████║██║ █╗ ██║███████╗",
+		"   ██║     ██║   ██║██╔══██║██║███╗██║╚════██║",
+		"   ╚██████╗╚██████╔╝██║  ██║╚███╔███╔╝███████║",
+		"    ╚═════╝ ╚═════╝ ╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝",
+		"",
+	}
+
+	// Print logo with cyan color
+	for _, line := range logo {
+		fmt.Println(cyan(line))
+		time.Sleep(30 * time.Millisecond)
+	}
+
+	// Info box with borders
+	boxTop := "╭" + strings.Repeat("─", 78) + "╮"
+	boxBottom := "╰" + strings.Repeat("─", 78) + "╯"
+	
+	fmt.Println(blue(boxTop))
+	fmt.Println(blue("│") + white("               💰 AWS Cost Optimization & Savings Tool 💸                  ") + blue("│"))
+	fmt.Println(blue("│") + white("                                                                              ") + blue("│"))
+	fmt.Println(blue("│") + "     " + cyan("coaws") + white(" helps you optimize AWS costs through intelligent tagging") + "       " + blue("│"))
+	fmt.Println(blue("│") + white("     and resource management across all your AWS regions.                    ") + blue("│"))
+	fmt.Println(blue("│") + white("                                                                              ") + blue("│"))
+	fmt.Println(blue(boxBottom))
+	fmt.Println()
+
+	// Command hints with separator
+	hints := white("/help") + " all commands  •  " + 
+	         white("ctrl + c") + " exit  •  " + 
+	         white("↑↓") + " command history"
+	separator := strings.Repeat("━", 80)
+	
+	fmt.Println(hints)
+	fmt.Println(yellow(separator))
+	fmt.Println(cyan("🚀 You are using") + " " + blue("coaws") + " " + cyan("- AWS Cost Optimization Shell"))
+	fmt.Println()
 }
 
 func printHelp() {
