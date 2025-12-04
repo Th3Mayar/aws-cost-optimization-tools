@@ -95,19 +95,20 @@ release:
     irm https://raw.githubusercontent.com/Th3Mayar/aws-cost-optimization-tools/main/install.ps1 | iex
     ```
 
-brews:
-  - name: coaws
-    repository:
-      owner: Th3Mayar
-      name: homebrew-coaws
-    directory: Formula
-    homepage: https://github.com/Th3Mayar/aws-cost-optimization-tools
-    description: "AWS Cost Optimization & Savings Tool"
-    license: MIT
-    install: |
-      bin.install "coaws"
-    test: |
-      system "#{bin}/coaws", "--version"
+# Uncomment below to publish to Homebrew (requires creating Th3Mayar/homebrew-coaws repo first)
+# brews:
+#   - name: coaws
+#     repository:
+#       owner: Th3Mayar
+#       name: homebrew-coaws
+#     directory: Formula
+#     homepage: https://github.com/Th3Mayar/aws-cost-optimization-tools
+#     description: "AWS Cost Optimization & Savings Tool"
+#     license: MIT
+#     install: |
+#       bin.install "coaws"
+#     test: |
+#       system "#{bin}/coaws", "--version"
 
 nfpms:
   - id: coaws-packages
