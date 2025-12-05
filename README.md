@@ -13,12 +13,15 @@ FinOps mini-shell to automate tagging and cost optimization in AWS.
 
 ## Features
 
+- 🔐 **AWS Authentication**: Built-in login and multi-profile support
 - 🏷️ **Tag Propagation**: Automatically propagates tags from EC2 instances to volumes, snapshots, EFS and FSx
 - 💰 **Cost Allocation Tags**: Activates tags for Cost Explorer
-- 🖥️ **Interactive Mode**: Beautiful shell REPL with colored output
+- 🖥️ **Interactive Mode**: Beautiful shell REPL with colored output and tab autocomplete
 - 🔧 **CLI Mode**: Non-interactive commands for scripts and automation
 - 🔒 **Dry-Run by default**: Safe by default, requires `--apply` for real changes
 - 🌍 **Multi-platform**: Available for Linux, macOS, and Windows
+- ⚡ **Shell Commands**: Execute system commands with `!` prefix
+- 📝 **Command History**: Navigate through command history with arrow keys
 
 ## Installation
 
@@ -81,6 +84,28 @@ sudo mv coaws /usr/local/bin/
 
 ## Usage
 
+### AWS Authentication
+
+First, configure your AWS credentials:
+
+```bash
+coaws start
+
+# Inside the shell:
+coaws ➜ login
+AWS Access Key ID: AKIA...
+AWS Secret Access Key: ****
+Default region [us-east-1]: us-east-1
+✓ Credentials saved successfully!
+
+# Verify your identity
+coaws ➜ whoami
+Current AWS Identity:
+  Account: 123456789012
+  User ARN: arn:aws:iam::123456789012:user/admin
+  Profile: default
+```
+
 ### Interactive Mode (Shell)
 
 ```bash
@@ -91,11 +116,21 @@ Inside the shell:
 
 ```bash
 coaws ➜ help
-coaws ➜ tagging all --apply --tag-storage
-coaws ➜ tagging show
-coaws ➜ tagging activate --apply
+coaws ➜ login                    # Configure AWS credentials
+coaws ➜ whoami                   # Show current identity
+coaws ➜ use-profile production   # Switch profiles
+coaws ➜ tagging show             # View resources
+coaws ➜ tagging all --apply      # Apply tagging
+coaws ➜ !clear                   # Execute shell commands
 coaws ➜ exit
 ```
+
+### Shell Features
+
+- **Tab Autocomplete**: Press `Tab` to autocomplete commands and flags
+- **Command History**: Use `↑` `↓` arrows to navigate history  
+- **Shell Commands**: Prefix with `!` to run system commands (e.g., `!ls`, `!pwd`, `!clear`)
+- **Multi-Profile**: Switch between AWS profiles without restarting
 
 ### CLI Mode (Non-Interactive)
 

@@ -1,6 +1,22 @@
-# 🚀 Quick Start - AWS Cost Optimization Tools
+# 🚀 Quick Start - coaws (AWS Cost Optimization Tools)
 
-## Step 1: Install Go
+## Step 1: Installation
+
+### Option A: Quick Install (Recommended)
+
+#### Linux/macOS
+```bash
+curl -sSL https://raw.githubusercontent.com/Th3Mayar/aws-cost-optimization-tools/main/install.sh | bash
+```
+
+#### Windows (PowerShell)
+```powershell
+irm https://raw.githubusercontent.com/Th3Mayar/aws-cost-optimization-tools/main/install.ps1 | iex
+```
+
+### Option B: Build from Source
+
+#### Install Go
 
 ```bash
 sudo snap install go --classic
@@ -12,7 +28,7 @@ Verify installation:
 go version
 ```
 
-## Step 2: Build the project
+#### Build the project
 
 ```bash
 cd /home/jhenriquez/repos/aws-cost-optimization-tools
@@ -23,50 +39,96 @@ Or manually:
 
 ```bash
 go mod tidy
-go build -o bin/cost-optimization ./cmd/cost-optimization
+go build -o coaws ./cmd/cost-optimization
 ```
 
-## Step 3: Test the binary
+#### Test the binary
 
 ```bash
 # View help
-./bin/cost-optimization --help
+./coaws --help
 
 # View version
-./bin/cost-optimization --version
+./coaws --version
 ```
 
-## Step 4: Interactive Shell Mode
+## Step 2: AWS Authentication
+
+### Configure AWS Credentials
 
 ```bash
-./bin/cost-optimization start
+coaws start
+```
+
+Inside the shell:
+
+```bash
+coaws ➜ login
+AWS Access Key ID: AKIA...
+AWS Secret Access Key: ****
+Default region [us-east-1]: us-east-1
+✓ Credentials saved successfully!
+```
+
+Or use existing AWS CLI profiles:
+
+```bash
+coaws ➜ use-profile production
+✓ Successfully authenticated!
+Account: 123456789012
+User: arn:aws:iam::123456789012:user/admin
+```
+
+### Authentication Commands
+
+```bash
+coaws ➜ login [profile]      # Configure AWS credentials
+coaws ➜ whoami               # Show current AWS identity
+coaws ➜ use-profile <name>   # Switch to different profile
+coaws ➜ profiles             # List available profiles
+coaws ➜ logout               # Clear current session
+```
+
+## Step 3: Interactive Shell Mode
+
+```bash
+coaws start
 ```
 
 Inside the shell try:
 
-```
-aws-cost-optimization> help
-aws-cost-optimization> tagging show us-east-1
-aws-cost-optimization> tagging all
-aws-cost-optimization> exit
+```bash
+coaws ➜ help
+coaws ➜ whoami
+coaws ➜ tagging show us-east-1
+coaws ➜ tagging all
+coaws ➜ !ls -la              # Execute shell commands with !
+coaws ➜ exit
 ```
 
-## Step 5: CLI Mode (Examples)
+### Shell Features
+
+- **Tab Autocomplete**: Press Tab to autocomplete commands and flags
+- **Command History**: Use ↑↓ arrows to navigate history
+- **Shell Commands**: Prefix with `!` to execute system commands (e.g., `!clear`, `!pwd`)
+- **Multi-Profile**: Switch between AWS profiles without restarting
+
+## Step 4: CLI Mode (Examples)
 
 ### Dry-run (without applying changes)
 
 ```bash
 # View resources in all regions
-./bin/cost-optimization tagging show
+coaws tagging show
 
 # View resources in a specific region
-./bin/cost-optimization tagging show us-east-1
+coaws tagging show us-east-1
 
 # Simulate tagging in all regions
-./bin/cost-optimization tagging all
+coaws tagging all
 
 # Simulate tagging in a region
-./bin/cost-optimization tagging set us-east-1
+coaws tagging set us-east-1
 ```
 
 ### Apply real changes (with --apply)
@@ -75,33 +137,35 @@ aws-cost-optimization> exit
 # ⚠️ WARNING: These commands modify resources
 
 # Apply tagging in all regions
-./bin/cost-optimization tagging all --apply
+coaws tagging all --apply
 
 # Apply tagging in a specific region
-./bin/cost-optimization tagging set us-east-1 --apply
+coaws tagging set us-east-1 --apply
 
 # Include EFS and FSx as well
-./bin/cost-optimization tagging all --apply --tag-storage
+coaws tagging all --apply --tag-storage
 
 # EC2 only (instances, volumes, snapshots)
-./bin/cost-optimization tagging ec2 --apply
+coaws tagging ec2 --apply
 
 # Activate Cost Allocation Tags
-./bin/cost-optimization tagging activate --apply
+coaws tagging activate --apply
 ```
 
-## Step 6: Install globally (optional)
+## Step 5: Install globally (optional)
+
+If you built from source:
 
 ```bash
-sudo cp bin/cost-optimization /usr/local/bin/
-cost-optimization start
+sudo cp coaws /usr/local/bin/
+coaws start
 ```
 
 Or with make:
 
 ```bash
 make install
-cost-optimization start
+coaws start
 ```
 
 ## Useful Makefile Commands
@@ -118,32 +182,54 @@ make test-show     # Show resources
 
 ## AWS Configuration
 
-Make sure you have your AWS credentials configured:
+### Option 1: Using coaws (Recommended)
 
 ```bash
-aws configure
+coaws start
+coaws ➜ login
 ```
 
-Or export environment variables:
+### Option 2: AWS CLI profiles
+
+```bash
+aws configure --profile myprofile
+```
+
+Then use it in coaws:
+
+```bash
+coaws start
+coaws ➜ use-profile myprofile
+```
+
+### Option 3: Environment variables
 
 ```bash
 export AWS_ACCESS_KEY_ID="your_access_key"
 export AWS_SECRET_ACCESS_KEY="your_secret_key"
 export AWS_REGION="us-east-1"
+coaws start
 ```
 
 ## Command Structure
 
 ### Shell Mode
 
-```
-aws-cost-optimization> tagging <mode> [options]
+```bash
+coaws ➜ tagging <mode> [options]
+coaws ➜ login [profile]
+coaws ➜ use-profile <name>
+coaws ➜ whoami
+coaws ➜ !<shell-command>
 ```
 
 ### CLI Mode
 
-```
-cost-optimization tagging <mode> [options]
+```bash
+coaws tagging <mode> [options]
+coaws start  # Interactive shell
+coaws --help
+coaws --version
 ```
 
 ### Available modes
@@ -167,34 +253,69 @@ cost-optimization tagging <mode> [options]
 
 ## Complete Examples
 
-### Example 1: Complete dry-run
+### Example 1: First time setup and dry-run
 
 ```bash
-cost-optimization tagging all
+coaws start
+
+# Configure credentials
+coaws ➜ login
+AWS Access Key ID: AKIA...
+AWS Secret Access Key: ****
+Default region: us-east-1
+
+# Verify identity
+coaws ➜ whoami
+
+# Test in dry-run
+coaws ➜ tagging all
+coaws ➜ exit
 ```
 
 ### Example 2: Apply in production
 
 ```bash
-cost-optimization tagging all --apply --tag-storage
+coaws tagging all --apply --tag-storage
 ```
 
-### Example 3: Single region only
+### Example 3: Multi-profile workflow
 
 ```bash
-cost-optimization tagging set us-east-1 --apply
+coaws start
+
+# Switch to production profile
+coaws ➜ use-profile production
+✓ Successfully authenticated!
+
+# Apply changes
+coaws ➜ tagging all --apply
+
+# Switch to staging
+coaws ➜ use-profile staging
+coaws ➜ tagging all --apply
+
+coaws ➜ exit
 ```
 
-### Example 4: Interactive shell
+### Example 4: Single region only
 
 ```bash
-cost-optimization start
+coaws tagging set us-east-1 --apply
+```
+
+### Example 5: Interactive shell with utilities
+
+```bash
+coaws start
 
 # Inside the shell:
-aws-cost-optimization> tagging show
-aws-cost-optimization> tagging all
-aws-cost-optimization> tagging all --apply
-aws-cost-optimization> exit
+coaws ➜ whoami
+coaws ➜ !pwd
+coaws ➜ tagging show
+coaws ➜ tagging all
+coaws ➜ !clear
+coaws ➜ tagging all --apply
+coaws ➜ exit
 ```
 
 ## ⚠️ Warnings
