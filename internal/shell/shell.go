@@ -32,11 +32,62 @@ func Run() error {
 		histFile = filepath.Join(home, ".coaws_history")
 	}
 
+	// Setup autocompletion
+	completer := readline.NewPrefixCompleter(
+		readline.PcItem("tagging",
+			readline.PcItem("all",
+				readline.PcItem("--apply"),
+				readline.PcItem("--tag-storage"),
+				readline.PcItem("--fix-orphans"),
+			),
+			readline.PcItem("set",
+				readline.PcItem("us-east-1"),
+				readline.PcItem("us-east-2"),
+				readline.PcItem("us-west-1"),
+				readline.PcItem("us-west-2"),
+				readline.PcItem("eu-west-1"),
+				readline.PcItem("eu-central-1"),
+				readline.PcItem("ap-southeast-1"),
+				readline.PcItem("ap-northeast-1"),
+			),
+			readline.PcItem("show"),
+			readline.PcItem("activate",
+				readline.PcItem("--apply"),
+			),
+			readline.PcItem("ec2",
+				readline.PcItem("--apply"),
+			),
+			readline.PcItem("ebs",
+				readline.PcItem("--apply"),
+			),
+			readline.PcItem("volumes",
+				readline.PcItem("--apply"),
+			),
+			readline.PcItem("snapshots",
+				readline.PcItem("--apply"),
+			),
+			readline.PcItem("fsx",
+				readline.PcItem("--apply"),
+			),
+			readline.PcItem("efs",
+				readline.PcItem("--apply"),
+			),
+		),
+		readline.PcItem("help"),
+		readline.PcItem("exit"),
+		readline.PcItem("quit"),
+		readline.PcItem("!clear"),
+		readline.PcItem("!ls"),
+		readline.PcItem("!pwd"),
+		readline.PcItem("!whoami"),
+	)
+
 	rlConfig := &readline.Config{
 		Prompt:          prompt,
 		HistoryFile:     histFile,
 		InterruptPrompt: "^C",
 		EOFPrompt:       "exit",
+		AutoComplete:    completer,
 	}
 
 	rl, err := readline.NewEx(rlConfig)
@@ -141,8 +192,9 @@ func printBanner() {
 	// Command hints with separator
 	hints := white("/help") + " all commands  •  " + 
 	         white("ctrl + c") + " exit  •  " + 
-	         white("↑↓") + " command history  •  " +
-	         white("!cmd") + " shell commands"
+	         white("↑↓") + " history  •  " +
+	         white("Tab") + " autocomplete  •  " +
+	         white("!cmd") + " shell"
 	separator := strings.Repeat("━", 80)
 	
 	fmt.Println(hints)
