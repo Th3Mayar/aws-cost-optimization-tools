@@ -65,6 +65,16 @@ func Run() error {
 			continue
 		}
 
+		// Execute shell commands with !
+		if strings.HasPrefix(line, "!") {
+			shellCmd := strings.TrimPrefix(line, "!")
+			if shellCmd == "" {
+				continue
+			}
+			executeShellCommand(shellCmd)
+			continue
+		}
+
 		if line == "exit" || line == "quit" {
 			fmt.Println("Bye.")
 			return nil
