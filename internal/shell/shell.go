@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -71,6 +72,15 @@ func Run() error {
 
 		if line == "help" {
 			printHelp()
+			continue
+		}
+
+		// Execute shell commands with ! prefix
+		if strings.HasPrefix(line, "!") {
+			shellCmd := strings.TrimPrefix(line, "!")
+			if err := executeShellCommand(shellCmd); err != nil {
+				fmt.Println("Error:", err)
+			}
 			continue
 		}
 
@@ -142,6 +152,7 @@ func printHelp() {
 	fmt.Println("  tagging snapshots [--apply]")
 	fmt.Println("  tagging fsx [--apply]")
 	fmt.Println("  tagging efs [--apply]")
+	fmt.Println("  !<command>       - Execute shell command (e.g., !clear, !ls)")
 	fmt.Println("  help")
 	fmt.Println("  exit | quit")
 }
@@ -237,4 +248,27 @@ func handleTagging(args []string) error {
 	// Execute
 	eng := tagging.NewEngine(opts)
 	return eng.Run(context.Background())
+}
+
+// executeShellCommand runs a shell command and displays the output
+func executeShellCommand(cmdStr string) error {
+	cmdStr = strings.TrimSpace(cmdStr)
+	if cmdStr == "" {
+		return nil
+	}
+
+	// Split command into parts
+	parts := strings.Fields(cmdStr)
+	if len(parts) == 0 {
+		return nil
+	}
+
+	// Create command
+	cmd := exec.Command(parts[0], parts[1:]...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+
+	// Run command
+	return cmd.Run()
 }
