@@ -141,7 +141,8 @@ func printBanner() {
 	// Command hints with separator
 	hints := white("/help") + " all commands  •  " + 
 	         white("ctrl + c") + " exit  •  " + 
-	         white("↑↓") + " command history"
+	         white("↑↓") + " command history  •  " +
+	         white("!cmd") + " shell commands"
 	separator := strings.Repeat("━", 80)
 	
 	fmt.Println(hints)
