@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Th3Mayar/aws-cost-optimization-tools/internal/auth"
 	"github.com/Th3Mayar/aws-cost-optimization-tools/internal/tagging"
 	"github.com/chzyer/readline"
 	"github.com/fatih/color"
@@ -73,6 +74,11 @@ func Run() error {
 				readline.PcItem("--apply"),
 			),
 		),
+		readline.PcItem("login"),
+		readline.PcItem("logout"),
+		readline.PcItem("whoami"),
+		readline.PcItem("use-profile"),
+		readline.PcItem("profiles"),
 		readline.PcItem("help"),
 		readline.PcItem("exit"),
 		readline.PcItem("quit"),
@@ -205,6 +211,13 @@ func printBanner() {
 
 func printHelp() {
 	fmt.Println("Available commands:")
+	fmt.Println("\nAuthentication:")
+	fmt.Println("  login [profile]      - Configure AWS credentials")
+	fmt.Println("  logout               - Clear current session")
+	fmt.Println("  whoami               - Show current AWS identity")
+	fmt.Println("  use-profile <name>   - Switch to different profile")
+	fmt.Println("  profiles             - List available profiles")
+	fmt.Println("\nTagging Operations:")
 	fmt.Println("  tagging all [--apply] [--tag-storage] [--fix-orphans]")
 	fmt.Println("  tagging set <region> [--apply] [--tag-storage]")
 	fmt.Println("  tagging show [<region>]")
@@ -215,6 +228,7 @@ func printHelp() {
 	fmt.Println("  tagging snapshots [--apply]")
 	fmt.Println("  tagging fsx [--apply]")
 	fmt.Println("  tagging efs [--apply]")
+	fmt.Println("\nOther:")
 	fmt.Println("  !<command>       - Execute shell command (e.g., !clear, !ls)")
 	fmt.Println("  help")
 	fmt.Println("  exit | quit")
@@ -230,6 +244,42 @@ func handleCommand(line string) error {
 	args := parts[1:]
 
 	switch cmd {
+	case "login":
+		profile := "default"
+		if len(args) > 0 {
+			profile = args[0]
+		}
+		return auth.Login(profile)
+	case "logout":
+		auth.Logout()
+		return nil
+	case "whoami":
+		return auth.Whoami()
+	case "use-profile":
+		if len(args) == 0 {
+			fmt.Println("Usage: use-profile <profile-name>")
+			return nil
+		}
+		return auth.UseProfile(args[0])
+	case "profiles":
+		profiles, err := auth.ListProfiles()
+		if err != nil {
+			return err
+		}
+		if len(profiles) == 0 {
+			fmt.Println("No profiles configured. Run 'login' to create one.")
+		} else {
+			fmt.Println("Available profiles:")
+			current := auth.GetCurrentProfile()
+			for _, p := range profiles {
+				if p == current {
+					fmt.Printf("  * %s (active)\n", p)
+				} else {
+					fmt.Printf("    %s\n", p)
+				}
+			}
+		}
+		return nil
 	case "tagging":
 		return handleTagging(args)
 	default:
