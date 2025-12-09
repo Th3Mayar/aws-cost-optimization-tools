@@ -9,8 +9,17 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
-	"github.com/fatih/color"
 	"gopkg.in/ini.v1"
+)
+
+// ANSI color codes
+const (
+	colorReset  = "\033[0m"
+	colorGreen  = "\033[32m"
+	colorYellow = "\033[33m"
+	colorBlue   = "\033[34m"
+	colorCyan   = "\033[36m"
+	colorBold   = "\033[1m"
 )
 
 var (
@@ -20,15 +29,11 @@ var (
 
 // Login performs interactive AWS credential configuration
 func Login(profile string) error {
-	green := color.New(color.FgGreen).SprintFunc()
-	cyan := color.New(color.FgCyan).SprintFunc()
-	yellow := color.New(color.FgYellow).SprintFunc()
-
 	if profile == "" {
 		profile = "default"
 	}
 
-	fmt.Println(cyan("🔐 AWS Credentials Setup"))
+	fmt.Printf("%s%s🔐 AWS Credentials Setup%s\n", colorBold, colorCyan, colorReset)
 	fmt.Println()
 
 	// Get credentials from user
@@ -99,9 +104,9 @@ func Login(profile string) error {
 	}
 
 	fmt.Println()
-	fmt.Println(green("✓ Credentials saved successfully!"))
-	fmt.Println(yellow(fmt.Sprintf("Profile: %s", profile)))
-	fmt.Println(yellow(fmt.Sprintf("Region: %s", region)))
+	fmt.Printf("%s%s✓ Credentials saved successfully!%s\n", colorBold, colorGreen, colorReset)
+	fmt.Printf("%sProfile: %s%s\n", colorYellow, profile, colorReset)
+	fmt.Printf("%sRegion: %s%s\n", colorYellow, region, colorReset)
 	fmt.Println()
 
 	// Validate credentials
@@ -134,13 +139,10 @@ func UseProfile(profile string) error {
 	currentProfile = profile
 	currentConfig = cfg
 
-	green := color.New(color.FgGreen).SprintFunc()
-	cyan := color.New(color.FgCyan).SprintFunc()
-
-	fmt.Println(green("✓ Successfully authenticated!"))
-	fmt.Println(cyan(fmt.Sprintf("Account: %s", *identity.Account)))
-	fmt.Println(cyan(fmt.Sprintf("User: %s", *identity.Arn)))
-	fmt.Println(cyan(fmt.Sprintf("Profile: %s", profile)))
+	fmt.Printf("%s%s✓ Successfully authenticated!%s\n", colorBold, colorGreen, colorReset)
+	fmt.Printf("%sAccount: %s%s\n", colorCyan, *identity.Account, colorReset)
+	fmt.Printf("%sUser: %s%s\n", colorCyan, *identity.Arn, colorReset)
+	fmt.Printf("%sProfile: %s%s\n", colorCyan, profile, colorReset)
 	fmt.Println()
 
 	return nil
@@ -176,15 +178,11 @@ func Whoami() error {
 		return fmt.Errorf("failed to get identity: %w", err)
 	}
 
-	blue := color.New(color.FgBlue, color.Bold).SprintFunc()
-	cyan := color.New(color.FgCyan).SprintFunc()
-	yellow := color.New(color.FgYellow).SprintFunc()
-
-	fmt.Println(blue("Current AWS Identity:"))
-	fmt.Println(cyan("  Account:"), yellow(*identity.Account))
-	fmt.Println(cyan("  User ARN:"), yellow(*identity.Arn))
-	fmt.Println(cyan("  User ID:"), yellow(*identity.UserId))
-	fmt.Println(cyan("  Profile:"), yellow(currentProfile))
+	fmt.Printf("%s%sCurrent AWS Identity:%s\n", colorBold, colorBlue, colorReset)
+	fmt.Printf("%s  Account:%s %s%s%s\n", colorCyan, colorReset, colorYellow, *identity.Account, colorReset)
+	fmt.Printf("%s  User ARN:%s %s%s%s\n", colorCyan, colorReset, colorYellow, *identity.Arn, colorReset)
+	fmt.Printf("%s  User ID:%s %s%s%s\n", colorCyan, colorReset, colorYellow, *identity.UserId, colorReset)
+	fmt.Printf("%s  Profile:%s %s%s%s\n", colorCyan, colorReset, colorYellow, currentProfile, colorReset)
 	fmt.Println()
 
 	return nil
@@ -221,8 +219,7 @@ func ListProfiles() ([]string, error) {
 func Logout() {
 	currentProfile = ""
 	currentConfig = aws.Config{}
-	
-	green := color.New(color.FgGreen).SprintFunc()
-	fmt.Println(green("✓ Logged out successfully"))
+
+	fmt.Printf("%s%s✓ Logged out successfully%s\n", colorBold, colorGreen, colorReset)
 	fmt.Println()
 }
