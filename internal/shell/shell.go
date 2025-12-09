@@ -9,9 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"time"
 
-	"github.com/Th3Mayar/aws-cost-optimization-tools/internal/auth"
 	"github.com/Th3Mayar/aws-cost-optimization-tools/internal/tagging"
 )
 
@@ -145,60 +143,68 @@ func Run() error {
 }
 
 func printBanner() {
-	logo := []string{
-		"",
-		"    ██████╗ ██████╗  █████╗ ██╗    ██╗███████╗",
-		"   ██╔════╝██╔═══██╗██╔══██╗██║    ██║██╔════╝",
-		"   ██║     ██║   ██║███████║██║ █╗ ██║███████╗",
-		"   ██║     ██║   ██║██╔══██║██║███╗██║╚════██║",
-		"   ╚██████╗╚██████╔╝██║  ██║╚███╔███╔╝███████║",
-		"    ╚═════╝ ╚═════╝ ╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝",
-		"",
-	}
+	// --- BIG COAWS BRAND BANNER (COMMENTED ON PURPOSE) ---
+	/*
+		logo := []string{
+			"",
+			"    ██████╗ ██████╗  █████╗ ██╗    ██╗███████╗",
+			"   ██╔════╝██╔═══██╗██╔══██╗██║    ██║██╔════╝",
+			"   ██║     ██║   ██║███████║██║ █╗ ██║███████╗",
+			"   ██║     ██║   ██║██╔══██║██║███╗██║╚════██║",
+			"   ╚██████╗╚██████╔╝██║  ██║╚███╔███╔╝███████║",
+			"    ╚═════╝ ╚═════╝ ╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝",
+			"",
+		}
 
-	// Print logo with cyan color
-	for _, line := range logo {
-		fmt.Printf("%s%s%s%s\n", colorBold, colorCyan, line, colorReset)
-		time.Sleep(30 * time.Millisecond)
-	}
+		// Print logo with cyan color
+		for _, line := range logo {
+			fmt.Printf("%s%s%s%s\n", colorBold, colorCyan, line, colorReset)
+			time.Sleep(30 * time.Millisecond)
+		}
 
-	// Info box with borders
-	boxTop := "╭" + strings.Repeat("─", 78) + "╮"
-	boxBottom := "╰" + strings.Repeat("─", 78) + "╯"
+		// Info box with borders
+		boxTop := "╭" + strings.Repeat("─", 78) + "╮"
+		boxBottom := "╰" + strings.Repeat("─", 78) + "╯"
 
-	fmt.Printf("%s%s%s%s\n", colorBold, colorBlue, boxTop, colorReset)
-	fmt.Printf("%s%s│%s%s               💰 AWS Cost Optimization & Savings Tool 💸                  %s%s│%s\n",
-		colorBold, colorBlue, colorReset, colorWhite, colorBold, colorBlue, colorReset)
-	fmt.Printf("%s%s│%s%s                                                                              %s%s│%s\n",
-		colorBold, colorBlue, colorReset, colorWhite, colorBold, colorBlue, colorReset)
-	fmt.Printf("%s%s│%s     %s%scoaws%s%s helps you optimize AWS costs through intelligent tagging%s       %s%s│%s\n",
-		colorBold, colorBlue, colorReset, colorBold, colorCyan, colorReset, colorWhite, colorWhite, colorBold, colorBlue, colorReset)
-	fmt.Printf("%s%s│%s%s     and resource management across all your AWS regions.                    %s%s│%s\n",
-		colorBold, colorBlue, colorReset, colorWhite, colorBold, colorBlue, colorReset)
-	fmt.Printf("%s%s│%s%s                                                                              %s%s│%s\n",
-		colorBold, colorBlue, colorReset, colorWhite, colorBold, colorBlue, colorReset)
-	fmt.Printf("%s%s%s%s\n", colorBold, colorBlue, boxBottom, colorReset)
+		fmt.Printf("%s%s%s%s\n", colorBold, colorBlue, boxTop, colorReset)
+		fmt.Printf("%s%s│%s%s               💰 AWS Cost Optimization & Savings Tool 💸                  %s%s│%s\n",
+			colorBold, colorBlue, colorReset, colorWhite, colorBold, colorBlue, colorReset)
+		fmt.Printf("%s%s│%s%s                                                                              %s%s│%s\n",
+			colorBold, colorBlue, colorReset, colorWhite, colorBold, colorBlue, colorReset)
+		fmt.Printf("%s%s│%s     %s%scoaws%s%s helps you optimize AWS costs through intelligent tagging%s       %s%s│%s\n",
+			colorBold, colorBlue, colorReset, colorBold, colorCyan, colorReset, colorWhite, colorWhite, colorBold, colorBlue, colorReset)
+		fmt.Printf("%s%s│%s%s     and resource management across all your AWS regions.                    %s%s│%s\n",
+			colorBold, colorBlue, colorReset, colorWhite, colorBold, colorBlue, colorReset)
+		fmt.Printf("%s%s│%s%s                                                                              %s%s│%s\n",
+			colorBold, colorBlue, colorReset, colorWhite, colorBold, colorBlue, colorReset)
+		fmt.Printf("%s%s%s%s\n", colorBold, colorBlue, boxBottom, colorReset)
+		fmt.Println()
+	*/
+
+	// --- Minimal banner (kept) ---
+	separator := strings.Repeat("━", 80)
+	fmt.Printf("%s%s%s\n", colorYellow, separator, colorReset)
+	fmt.Printf("%s🚀 AWS Cost Optimization Tool%s\n", colorCyan, colorReset)
 	fmt.Println()
 
 	// Command hints
 	fmt.Printf("%s/help%s all commands  •  %sctrl + c%s exit  •  %s!cmd%s shell\n",
 		colorWhite, colorReset, colorWhite, colorReset, colorWhite, colorReset)
-
-	separator := strings.Repeat("━", 80)
-	fmt.Printf("%s%s%s\n", colorYellow, separator, colorReset)
-	fmt.Printf("%s🚀 You are using%s %s%scoaws%s %s- AWS Cost Optimization Shell%s\n",
-		colorCyan, colorReset, colorBold, colorBlue, colorReset, colorCyan, colorReset)
-	fmt.Println()
 }
 
 func printHelp() {
 	fmt.Println("Available commands:")
-	fmt.Println("\nAuthentication:")
-	fmt.Println("  login [profile]      - Configure AWS credentials")
-	fmt.Println("  logout               - Clear current session")
-	fmt.Println("  whoami               - Show current AWS identity")
-	fmt.Println("  use-profile <name>   - Switch to different profile")
-	fmt.Println("  profiles             - List available profiles")
+
+	// --- AUTH SECTION REMOVED ---
+	/*
+		fmt.Println("\nAuthentication:")
+		fmt.Println("  login [profile]      - Configure AWS credentials")
+		fmt.Println("  logout               - Clear current session")
+		fmt.Println("  whoami               - Show current AWS identity")
+		fmt.Println("  use-profile <name>   - Switch to different profile")
+		fmt.Println("  profiles             - List available profiles")
+	*/
+
 	fmt.Println("\nTagging Operations:")
 	fmt.Println("  tagging all [--apply] [--tag-storage] [--fix-orphans]")
 	fmt.Println("  tagging set <region> [--apply] [--tag-storage]")
@@ -210,6 +216,7 @@ func printHelp() {
 	fmt.Println("  tagging snapshots [--apply]")
 	fmt.Println("  tagging fsx [--apply]")
 	fmt.Println("  tagging efs [--apply]")
+
 	fmt.Println("\nOther:")
 	fmt.Println("  !<command>       - Execute shell command (e.g., !clear, !ls)")
 	fmt.Println("  help")
@@ -226,44 +233,50 @@ func handleCommand(line string) error {
 	args := parts[1:]
 
 	switch cmd {
-	case "login":
-		profile := "default"
-		if len(args) > 0 {
-			profile = args[0]
-		}
-		return auth.Login(profile)
-	case "logout":
-		auth.Logout()
-		return nil
-	case "whoami":
-		return auth.Whoami()
-	case "use-profile":
-		if len(args) == 0 {
-			fmt.Println("Usage: use-profile <profile-name>")
+
+	// --- AUTH COMMANDS REMOVED ---
+	/*
+		case "login":
+			profile := "default"
+			if len(args) > 0 {
+				profile = args[0]
+			}
+			return auth.Login(profile)
+		case "logout":
+			auth.Logout()
 			return nil
-		}
-		return auth.UseProfile(args[0])
-	case "profiles":
-		profiles, err := auth.ListProfiles()
-		if err != nil {
-			return err
-		}
-		if len(profiles) == 0 {
-			fmt.Println("No profiles configured. Run 'login' to create one.")
-		} else {
-			fmt.Println("Available profiles:")
-			current := auth.GetCurrentProfile()
-			for _, p := range profiles {
-				if p == current {
-					fmt.Printf("  * %s (active)\n", p)
-				} else {
-					fmt.Printf("    %s\n", p)
+		case "whoami":
+			return auth.Whoami()
+		case "use-profile":
+			if len(args) == 0 {
+				fmt.Println("Usage: use-profile <profile-name>")
+				return nil
+			}
+			return auth.UseProfile(args[0])
+		case "profiles":
+			profiles, err := auth.ListProfiles()
+			if err != nil {
+				return err
+			}
+			if len(profiles) == 0 {
+				fmt.Println("No profiles configured. Run 'login' to create one.")
+			} else {
+				fmt.Println("Available profiles:")
+				current := auth.GetCurrentProfile()
+				for _, p := range profiles {
+					if p == current {
+						fmt.Printf("  * %s (active)\n", p)
+					} else {
+						fmt.Printf("    %s\n", p)
+					}
 				}
 			}
-		}
-		return nil
+			return nil
+	*/
+
 	case "tagging":
 		return handleTagging(args)
+
 	default:
 		fmt.Println("Unknown command:", cmd)
 		fmt.Println("Type 'help' for available commands.")

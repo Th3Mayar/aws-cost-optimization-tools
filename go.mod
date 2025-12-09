@@ -9,8 +9,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.141.0
 	github.com/aws/aws-sdk-go-v2/service/efs v1.26.0
 	github.com/aws/aws-sdk-go-v2/service/fsx v1.42.0
-	github.com/aws/aws-sdk-go-v2/service/sts v1.26.5
-	gopkg.in/ini.v1 v1.67.0
 )
 
 require (
@@ -23,7 +21,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.10.9 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.18.5 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.21.5 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sts v1.26.5 // indirect
 	github.com/aws/smithy-go v1.20.1 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
-	github.com/stretchr/testify v1.11.1 // indirect
 )
