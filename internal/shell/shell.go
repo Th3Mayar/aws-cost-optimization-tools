@@ -8,8 +8,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"time"
 
+	// "time"
 	"github.com/Th3Mayar/aws-cost-optimization-tools/internal/tagging"
 	"github.com/chzyer/readline"
 	"github.com/fatih/color"
@@ -24,7 +24,7 @@ func Run() error {
 	blue := color.New(color.FgBlue).SprintFunc()
 	cyan := color.New(color.FgCyan).SprintFunc()
 
-	prompt := fmt.Sprintf("%s %s ", blue("coaws"), cyan("➜"))
+	prompt := fmt.Sprintf("%s %s ", blue("coaws"), cyan("➜ "))
 
 	// History file in user's home
 	histFile := "/tmp/.coaws_history"
@@ -116,15 +116,18 @@ func Run() error {
 			continue
 		}
 
-		// Execute shell commands with !
+		// Execute shell commands with ! prefix
 		if strings.HasPrefix(line, "!") {
 			shellCmd := strings.TrimPrefix(line, "!")
 			if shellCmd == "" {
 				continue
 			}
-			executeShellCommand(shellCmd)
+			if err := executeShellCommand(shellCmd); err != nil {
+				fmt.Println("Error:", err)
+			}
 			continue
 		}
+
 
 		if line == "exit" || line == "quit" {
 			fmt.Println("Bye.")
@@ -133,15 +136,6 @@ func Run() error {
 
 		if line == "help" {
 			printHelp()
-			continue
-		}
-
-		// Execute shell commands with ! prefix
-		if strings.HasPrefix(line, "!") {
-			shellCmd := strings.TrimPrefix(line, "!")
-			if err := executeShellCommand(shellCmd); err != nil {
-				fmt.Println("Error:", err)
-			}
 			continue
 		}
 
@@ -154,43 +148,50 @@ func Run() error {
 // printBanner prints a stylized ASCII banner inspired by Amazon Q
 func printBanner() {
 	cyan := color.New(color.FgCyan, color.Bold).SprintFunc()
-	blue := color.New(color.FgBlue, color.Bold).SprintFunc()
+	// blue := color.New(color.FgBlue, color.Bold).SprintFunc()
 	yellow := color.New(color.FgYellow, color.Bold).SprintFunc()
 	white := color.New(color.FgWhite).SprintFunc()
 	
 	// ASCII art logo - "coaws" text
-	logo := []string{
-		"",
-		"    ██████╗ ██████╗  █████╗ ██╗    ██╗███████╗",
-		"   ██╔════╝██╔═══██╗██╔══██╗██║    ██║██╔════╝",
-		"   ██║     ██║   ██║███████║██║ █╗ ██║███████╗",
-		"   ██║     ██║   ██║██╔══██║██║███╗██║╚════██║",
-		"   ╚██████╗╚██████╔╝██║  ██║╚███╔███╔╝███████║",
-		"    ╚═════╝ ╚═════╝ ╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝",
-		"",
-	}
+	// logo := []string{
+	// 	"",
+	// 	"    ██████╗ ██████╗  █████╗ ██╗    ██╗███████╗",
+	// 	"   ██╔════╝██╔═══██╗██╔══██╗██║    ██║██╔════╝",
+	// 	"   ██║     ██║   ██║███████║██║ █╗ ██║███████╗",
+	// 	"   ██║     ██║   ██║██╔══██║██║███╗██║╚════██║",
+	// 	"   ╚██████╗╚██████╔╝██║  ██║╚███╔███╔╝███████║",
+	// 	"    ╚═════╝ ╚═════╝ ╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝",
+	// 	"",
+	// }
 
 	// Print logo with cyan color
-	for _, line := range logo {
-		fmt.Println(cyan(line))
-		time.Sleep(30 * time.Millisecond)
-	}
+	// for _, line := range logo {
+	// 	fmt.Println(cyan(line))
+	// 	time.Sleep(30 * time.Millisecond)
+	// }
 
 	// Info box with borders
-	boxTop := "╭" + strings.Repeat("─", 78) + "╮"
-	boxBottom := "╰" + strings.Repeat("─", 78) + "╯"
+	// boxTop := "╭" + strings.Repeat("─", 78) + "╮"
+	// boxBottom := "╰" + strings.Repeat("─", 78) + "╯"
 	
-	fmt.Println(blue(boxTop))
-	fmt.Println(blue("│") + white("               💰 AWS Cost Optimization & Savings Tool 💸                  ") + blue("│"))
-	fmt.Println(blue("│") + white("                                                                              ") + blue("│"))
-	fmt.Println(blue("│") + "     " + cyan("coaws") + white(" helps you optimize AWS costs through intelligent tagging") + "       " + blue("│"))
-	fmt.Println(blue("│") + white("     and resource management across all your AWS regions.                    ") + blue("│"))
-	fmt.Println(blue("│") + white("                                                                              ") + blue("│"))
-	fmt.Println(blue(boxBottom))
+	// fmt.Println(blue(boxTop))
+	// fmt.Println(blue("│") + white("               💰 AWS Cost Optimization & Savings Tool 💸                  ") + blue("│"))
+	// fmt.Println(blue("│") + white("                                                                              ") + blue("│"))
+	// fmt.Println(blue("│") + "     " + cyan("coaws") + white(" helps you optimize AWS costs through intelligent tagging") + "       " + blue("│"))
+	// fmt.Println(blue("│") + white("     and resource management across all your AWS regions.                    ") + blue("│"))
+	// fmt.Println(blue("│") + white("                                                                              ") + blue("│"))
+	// fmt.Println(blue(boxBottom))
+	// fmt.Println()
+
+	// --- Minimal banner (kept) ---
+	fmt.Println("🚀 AWS Cost Optimization Tool")
 	fmt.Println()
 
+	// Command hints
+	fmt.Println("help all commands  •  ctrl + c exit")
+
 	// Command hints with separator
-	hints := white("/help") + " all commands  •  " + 
+	hints := white("help") + " all commands  •  " + 
 	         white("ctrl + c") + " exit  •  " + 
 	         white("↑↓") + " history  •  " +
 	         white("Tab") + " autocomplete  •  " +
@@ -199,7 +200,7 @@ func printBanner() {
 	
 	fmt.Println(hints)
 	fmt.Println(yellow(separator))
-	fmt.Println(cyan("🚀 You are using") + " " + blue("coaws") + " " + cyan("- AWS Cost Optimization Shell"))
+	fmt.Println(cyan("🚀 You are using") + " " + cyan("AWS Cost Optimization Tool"))
 	fmt.Println()
 }
 
