@@ -1,6 +1,7 @@
 package shell
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"io"
@@ -12,108 +13,100 @@ import (
 
 	"github.com/Th3Mayar/aws-cost-optimization-tools/internal/auth"
 	"github.com/Th3Mayar/aws-cost-optimization-tools/internal/tagging"
-	"github.com/chzyer/readline"
-	"github.com/fatih/color"
 )
 
-// Run starts the interactive shell REPL with a stylized banner and prompt.
+// ANSI color codes
+const (
+	colorReset  = "\033[0m"
+	colorRed    = "\033[31m"
+	colorGreen  = "\033[32m"
+	colorYellow = "\033[33m"
+	colorBlue   = "\033[34m"
+	colorCyan   = "\033[36m"
+	colorWhite  = "\033[37m"
+	colorBold   = "\033[1m"
+)
+
+// History manages command history
+type History struct {
+	commands []string
+	file     string
+	position int
+}
+
+func newHistory(file string) *History {
+	h := &History{
+		commands: make([]string, 0),
+		file:     file,
+		position: 0,
+	}
+	h.load()
+	return h
+}
+
+func (h *History) load() {
+	data, err := os.ReadFile(h.file)
+	if err != nil {
+		return
+	}
+	lines := strings.Split(string(data), "\n")
+	for _, line := range lines {
+		if strings.TrimSpace(line) != "" {
+			h.commands = append(h.commands, line)
+		}
+	}
+	h.position = len(h.commands)
+}
+
+func (h *History) save() {
+	f, err := os.OpenFile(h.file, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+
+	for _, cmd := range h.commands {
+		fmt.Fprintln(f, cmd)
+	}
+}
+
+func (h *History) add(cmd string) {
+	if cmd == "" {
+		return
+	}
+	// Avoid duplicates
+	if len(h.commands) > 0 && h.commands[len(h.commands)-1] == cmd {
+		return
+	}
+	h.commands = append(h.commands, cmd)
+	h.position = len(h.commands)
+	h.save()
+}
+
+// Run starts the interactive shell REPL
 func Run() error {
-	// Print animated banner
 	printBanner()
 
-	// Build prompt with ANSI colors. 'coaws' in blue and a cyan arrow.
-	blue := color.New(color.FgBlue).SprintFunc()
-	cyan := color.New(color.FgCyan).SprintFunc()
-
-	prompt := fmt.Sprintf("%s %s ", blue("coaws"), cyan("➜"))
-
-	// History file in user's home
+	// History file
 	histFile := "/tmp/.coaws_history"
 	if home, err := os.UserHomeDir(); err == nil {
 		histFile = filepath.Join(home, ".coaws_history")
 	}
 
-	// Setup autocompletion
-	completer := readline.NewPrefixCompleter(
-		readline.PcItem("tagging",
-			readline.PcItem("all",
-				readline.PcItem("--apply"),
-				readline.PcItem("--tag-storage"),
-				readline.PcItem("--fix-orphans"),
-			),
-			readline.PcItem("set",
-				readline.PcItem("us-east-1"),
-				readline.PcItem("us-east-2"),
-				readline.PcItem("us-west-1"),
-				readline.PcItem("us-west-2"),
-				readline.PcItem("eu-west-1"),
-				readline.PcItem("eu-central-1"),
-				readline.PcItem("ap-southeast-1"),
-				readline.PcItem("ap-northeast-1"),
-			),
-			readline.PcItem("show"),
-			readline.PcItem("activate",
-				readline.PcItem("--apply"),
-			),
-			readline.PcItem("ec2",
-				readline.PcItem("--apply"),
-			),
-			readline.PcItem("ebs",
-				readline.PcItem("--apply"),
-			),
-			readline.PcItem("volumes",
-				readline.PcItem("--apply"),
-			),
-			readline.PcItem("snapshots",
-				readline.PcItem("--apply"),
-			),
-			readline.PcItem("fsx",
-				readline.PcItem("--apply"),
-			),
-			readline.PcItem("efs",
-				readline.PcItem("--apply"),
-			),
-		),
-		readline.PcItem("login"),
-		readline.PcItem("logout"),
-		readline.PcItem("whoami"),
-		readline.PcItem("use-profile"),
-		readline.PcItem("profiles"),
-		readline.PcItem("help"),
-		readline.PcItem("exit"),
-		readline.PcItem("quit"),
-		readline.PcItem("!clear"),
-		readline.PcItem("!ls"),
-		readline.PcItem("!pwd"),
-		readline.PcItem("!whoami"),
-	)
-
-	rlConfig := &readline.Config{
-		Prompt:          prompt,
-		HistoryFile:     histFile,
-		InterruptPrompt: "^C",
-		EOFPrompt:       "exit",
-		AutoComplete:    completer,
-	}
-
-	rl, err := readline.NewEx(rlConfig)
-	if err != nil {
-		return err
-	}
-	defer rl.Close()
+	history := newHistory(histFile)
+	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		line, err := rl.Readline()
-		if err == readline.ErrInterrupt {
-			if len(line) == 0 {
-				fmt.Println()
-				return nil
-			}
-			continue
-		} else if err == io.EOF {
+		// Print prompt
+		fmt.Printf("%s%scoaws%s %s➜%s ", colorBold, colorBlue, colorReset, colorCyan, colorReset)
+
+		// Read line
+		line, err := reader.ReadString('\n')
+		if err == io.EOF {
 			fmt.Println()
 			return nil
-		} else if err != nil {
+		}
+		if err != nil {
 			return err
 		}
 
@@ -121,6 +114,9 @@ func Run() error {
 		if line == "" {
 			continue
 		}
+
+		// Add to history
+		history.add(line)
 
 		// Execute shell commands with !
 		if strings.HasPrefix(line, "!") {
@@ -142,29 +138,13 @@ func Run() error {
 			continue
 		}
 
-		// Execute shell commands with ! prefix
-		if strings.HasPrefix(line, "!") {
-			shellCmd := strings.TrimPrefix(line, "!")
-			if err := executeShellCommand(shellCmd); err != nil {
-				fmt.Println("Error:", err)
-			}
-			continue
-		}
-
 		if err := handleCommand(line); err != nil {
-			fmt.Println("Error:", err)
+			fmt.Printf("%sError: %s%s\n", colorRed, err, colorReset)
 		}
 	}
 }
 
-// printBanner prints a stylized ASCII banner inspired by Amazon Q
 func printBanner() {
-	cyan := color.New(color.FgCyan, color.Bold).SprintFunc()
-	blue := color.New(color.FgBlue, color.Bold).SprintFunc()
-	yellow := color.New(color.FgYellow, color.Bold).SprintFunc()
-	white := color.New(color.FgWhite).SprintFunc()
-	
-	// ASCII art logo - "coaws" text
 	logo := []string{
 		"",
 		"    ██████╗ ██████╗  █████╗ ██╗    ██╗███████╗",
@@ -178,34 +158,36 @@ func printBanner() {
 
 	// Print logo with cyan color
 	for _, line := range logo {
-		fmt.Println(cyan(line))
+		fmt.Printf("%s%s%s%s\n", colorBold, colorCyan, line, colorReset)
 		time.Sleep(30 * time.Millisecond)
 	}
 
 	// Info box with borders
 	boxTop := "╭" + strings.Repeat("─", 78) + "╮"
 	boxBottom := "╰" + strings.Repeat("─", 78) + "╯"
-	
-	fmt.Println(blue(boxTop))
-	fmt.Println(blue("│") + white("               💰 AWS Cost Optimization & Savings Tool 💸                  ") + blue("│"))
-	fmt.Println(blue("│") + white("                                                                              ") + blue("│"))
-	fmt.Println(blue("│") + "     " + cyan("coaws") + white(" helps you optimize AWS costs through intelligent tagging") + "       " + blue("│"))
-	fmt.Println(blue("│") + white("     and resource management across all your AWS regions.                    ") + blue("│"))
-	fmt.Println(blue("│") + white("                                                                              ") + blue("│"))
-	fmt.Println(blue(boxBottom))
+
+	fmt.Printf("%s%s%s%s\n", colorBold, colorBlue, boxTop, colorReset)
+	fmt.Printf("%s%s│%s%s               💰 AWS Cost Optimization & Savings Tool 💸                  %s%s│%s\n",
+		colorBold, colorBlue, colorReset, colorWhite, colorBold, colorBlue, colorReset)
+	fmt.Printf("%s%s│%s%s                                                                              %s%s│%s\n",
+		colorBold, colorBlue, colorReset, colorWhite, colorBold, colorBlue, colorReset)
+	fmt.Printf("%s%s│%s     %s%scoaws%s%s helps you optimize AWS costs through intelligent tagging%s       %s%s│%s\n",
+		colorBold, colorBlue, colorReset, colorBold, colorCyan, colorReset, colorWhite, colorWhite, colorBold, colorBlue, colorReset)
+	fmt.Printf("%s%s│%s%s     and resource management across all your AWS regions.                    %s%s│%s\n",
+		colorBold, colorBlue, colorReset, colorWhite, colorBold, colorBlue, colorReset)
+	fmt.Printf("%s%s│%s%s                                                                              %s%s│%s\n",
+		colorBold, colorBlue, colorReset, colorWhite, colorBold, colorBlue, colorReset)
+	fmt.Printf("%s%s%s%s\n", colorBold, colorBlue, boxBottom, colorReset)
 	fmt.Println()
 
-	// Command hints with separator
-	hints := white("/help") + " all commands  •  " + 
-	         white("ctrl + c") + " exit  •  " + 
-	         white("↑↓") + " history  •  " +
-	         white("Tab") + " autocomplete  •  " +
-	         white("!cmd") + " shell"
+	// Command hints
+	fmt.Printf("%s/help%s all commands  •  %sctrl + c%s exit  •  %s!cmd%s shell\n",
+		colorWhite, colorReset, colorWhite, colorReset, colorWhite, colorReset)
+
 	separator := strings.Repeat("━", 80)
-	
-	fmt.Println(hints)
-	fmt.Println(yellow(separator))
-	fmt.Println(cyan("🚀 You are using") + " " + blue("coaws") + " " + cyan("- AWS Cost Optimization Shell"))
+	fmt.Printf("%s%s%s\n", colorYellow, separator, colorReset)
+	fmt.Printf("%s🚀 You are using%s %s%scoaws%s %s- AWS Cost Optimization Shell%s\n",
+		colorCyan, colorReset, colorBold, colorBlue, colorReset, colorCyan, colorReset)
 	fmt.Println()
 }
 
@@ -363,25 +345,21 @@ func handleTagging(args []string) error {
 	return eng.Run(context.Background())
 }
 
-// executeShellCommand runs a shell command and displays the output
 func executeShellCommand(cmdStr string) error {
 	cmdStr = strings.TrimSpace(cmdStr)
 	if cmdStr == "" {
 		return nil
 	}
 
-	// Split command into parts
 	parts := strings.Fields(cmdStr)
 	if len(parts) == 0 {
 		return nil
 	}
 
-	// Create command
 	cmd := exec.Command(parts[0], parts[1:]...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
 
-	// Run command
 	return cmd.Run()
 }
