@@ -96,7 +96,7 @@ func Run() error {
 
 	for {
 		// Print prompt
-		fmt.Printf("%s%scoaws%s %s➜%s ", colorBold, colorBlue, colorReset, colorCyan, colorReset)
+		fmt.Printf("%s%scoaws%s %s➜ %s ", colorBold, colorBlue, colorReset, colorCyan, colorReset)
 
 		// Read line
 		line, err := reader.ReadString('\n')
@@ -182,14 +182,14 @@ func printBanner() {
 	*/
 
 	// --- Minimal banner (kept) ---
-	separator := strings.Repeat("━", 80)
-	fmt.Printf("%s%s%s\n", colorYellow, separator, colorReset)
+	// separator := strings.Repeat("━", 80)
+	// fmt.Printf("%s%s%s\n", colorYellow, separator, colorReset)
 	fmt.Printf("%s🚀 AWS Cost Optimization Tool%s\n", colorCyan, colorReset)
 	fmt.Println()
 
 	// Command hints
-	fmt.Printf("%s/help%s all commands  •  %sctrl + c%s exit  •  %s!cmd%s shell\n",
-		colorWhite, colorReset, colorWhite, colorReset, colorWhite, colorReset)
+	fmt.Printf("%shelp%s all commands  •  %sctrl + c%s exit\n",
+		colorWhite, colorReset, colorWhite, colorReset)
 }
 
 func printHelp() {
